@@ -16,6 +16,8 @@ public class Test {
 		//dev3 updated and wanted to commit
 		
 		//dev2 saw the changes and updated
+		
+		//dev3 pulled and updated and committed changes
 	}
 
 }
