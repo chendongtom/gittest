@@ -14,6 +14,8 @@ public class Test {
 		//dev2 updated again and commited changes
 		
 		//dev3 updated and wanted to commit
+		
+		//dev2 saw the changes and updated
 	}
 
 }
