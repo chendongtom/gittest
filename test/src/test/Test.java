@@ -6,6 +6,7 @@ public class Test {
 		System.out.println("dev1 initial");
 		//ready for initial commit
 		//modified by dev2 
+		//modified by dev2 again
 	}
 
 }
