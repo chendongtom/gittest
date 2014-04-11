@@ -17,7 +17,10 @@ public class Test {
 		
 		//dev2 saw the changes and updated
 		
+		//dev2 updated again and commited changes for merging later on
+		
 		//dev3 pulled and updated and committed changes
+		//dev3 merged the change and commit
 	}
 
 }
