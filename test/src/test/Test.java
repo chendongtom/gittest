@@ -21,6 +21,8 @@ public class Test {
 		
 		//dev3 pulled and updated and committed changes
 		//dev3 merged the change and commit
+		
+		//dev3 changed again and ready to commit
 	}
 
 }
