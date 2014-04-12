@@ -23,6 +23,8 @@ public class Test {
 		//dev3 merged the change and commit
 		
 		//dev3 changed again and ready to commit
+		
+		//dev2 created a new branch - v_1_1
 	}
 
 }
