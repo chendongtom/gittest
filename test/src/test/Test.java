@@ -25,6 +25,8 @@ public class Test {
 		//dev3 changed again and ready to commit
 		
 		//dev2 created a new branch - v_1_1
+		
+		//dev2 working on v_1_1, added changes and commited to its branch
 	}
 
 }
