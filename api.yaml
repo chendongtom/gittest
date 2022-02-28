@@ -1,0 +1,3928 @@
+openapi: 3.0.0
+info:
+  description: Api Documentation
+  version: "1.0"
+  title: Api Documentation
+  termsOfService: urn:tos
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+paths:
+
+  /rewards:
+    get:
+      summary: Get list of rewards
+      operationId: getRewards
+      tags:
+        - rewards
+      parameters:
+        - name: rewardsIds
+          in: query
+          description: List of reward ids separated by comma (e.g. "50626,50616,50619")
+          required: false
+          schema:
+            type: string
+            example: "50626,50616,50619"
+        - name: filter
+          in: query
+          description: RO filter (see Filter Parameters on RO console - https://uat-api.rewardops.io/api_docs/console?version=v4)
+          required: false
+          schema:
+            type: string
+            example: "LABEL(brand)==\"samsung\""
+        - name: category
+          in: query
+          description: RO category code
+          required: false
+          schema:
+            type: string
+            example: "C-1-1"
+        - name: brand
+          in: query
+          description: RO brand code
+          required: false
+          schema:
+            type: string
+            example: "some brand"
+        - name: tier
+          in: query
+          schema:
+            type: string
+            enum: ["Blue", "Gold", "Onyx"]
+            default: "Blue"
+            example: "Blue"
+          required: false
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: string
+            example: "1"
+        - name: itemsPerPage
+          in: query
+          description: Number of rewards per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+        - name: inStock
+          in: query
+          description: include rewards in stock?
+          required: false
+          schema:
+            type: boolean
+            default: true
+            example: true
+        - name: sortBy
+          in: query
+          description: sort rewards by a specific clause
+          required: false
+          schema:
+            type: string
+            enum: ["name", "sale_price", "member_sale_price", "created_date", "updated_date"]
+            default: "created_date"
+            example: "created_date"
+        - name: sortOrder
+          description: sort ascending or descending
+          in: query
+          schema:
+            type: string
+            enum: ["ascending", "descending"]
+            default: "descending"
+            example: "descending"
+        - name: locale
+          in: query
+          description: Reponse's language. e.g. "en-CA"
+          required: false
+          schema:
+            type: string
+            example: "en-CA"
+            default: "en-CA"
+      responses:
+        "200":
+          description: An array of rewards
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Reward"
+                  status:
+                    type: string
+                    example: "OK"
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /rewards/categories:
+    get:
+      summary: Get list of categories
+      operationId: getRewardsCategories
+      parameters:
+        - name: category
+          in: query
+          description: get the infor for one category (e.g. C-2). If this is not present then all categories will be returned
+          required: false
+          schema:
+            type: string
+            example: "C-2"
+      tags:
+        - rewards
+      responses:
+        "200":
+          description: An array of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      custom_categories:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: "01"
+                            name:
+                              type: object
+                              additionalProperties:
+                                type: string
+                              example:
+                                "en-CA": "Some category name"
+                            description:
+                              type: object
+                              additionalProperties:
+                                type: string
+                              example:
+                                "en-CA": "Some English description"
+                            items_count:
+                              type: string
+                              example: "13"
+                            ancestors:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  code:
+                                    type: string
+                                    example: "CAT_ARO_00000"
+                                  name:
+                                    type: object
+                                    additionalProperties:
+                                      type: string
+                                    example:
+                                      "en-CA": "Some English name"
+                            children:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  code:
+                                    type: string
+                                    example: "C-2-1"
+                                  name:
+                                    type: object
+                                    additionalProperties:
+                                      type: string
+                                    example:
+                                      "en-CA": "Some English name"
+                  status:
+                    type: string
+                    example: "OK"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /rewards/category-filters:
+    get:
+      summary: Get list of filters
+      operationId: getRewardsFilters
+      tags:
+        - rewards
+      parameters:
+        - name: category
+          in: query
+          description: Category Id
+          required: true
+          schema:
+            type: string
+            example: "C-1-1"
+        - name: locale
+          in: query
+          description: Reponse's language. e.g. "en-CA"
+          required: false
+          schema:
+            type: string
+            example: "en-CA"
+            default: "en-CA"
+      responses:
+        "200":
+          description: An array of filters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        "type":
+                          type: string
+                          example: "Label::Brand"
+                        "name":
+                          type: string
+                          example: "Brands"
+                        options:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                                example: 1223.0
+                              name:
+                                type: string
+                                example: "Beats"
+                              key:
+                                type: string
+                                example: "beats"
+                              image:
+                                type: string
+                                example: "http://someurl.com/image.png"
+                              filter_definition:
+                                type: string
+                                example: "LABEL(brand)==\"beats\""
+                              count:
+                                type: number
+                                example: 4.0
+                  status:
+                    type: string
+                    example: "OK"
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /card/offers:
+    get:
+      tags:
+        - card
+      security:
+        - memberToken: []
+      summary: Get offers saved on collector's card
+      operationId: getSavedOffersUsingGET
+      parameters:
+        - $ref: "#/components/parameters/LatitudeParam"
+        - $ref: "#/components/parameters/LongitudeParam"
+        - name: limit
+          in: query
+          description: For all offers on card view grouped by partner, limit is the number of partners returned. For a single partner view with offers, limit is the number of offers returned
+          required: false
+          schema:
+            type: integer
+            example: 100
+        - name: offset
+          in: query
+          description: For all offers on card view grouped by partner, offset is applied on the number of partners returned. For a single partner view with offers, offset is applied on the number of offers returned
+          required: false
+          schema:
+            type: integer
+            example: 5
+        - name: offerLimit
+          in: query
+          description: For all offers on card view grouped by partner, offerLimit is applied on the number of offers returned per partner.
+          required: false
+          schema:
+            type: integer
+            example: 12
+        - $ref: "#/components/parameters/StateParam"
+        - name: partnerId
+          in: query
+          description: The id associated with a partner
+          required: false
+          schema:
+            type: string
+            example: "38178928-9281-42aa-9f70-8c39c453baf1"
+        - name: x-origin-client
+          in: header
+          description: origin client value needed for downstream state call
+          required: true
+          schema:
+            type: string
+            enum: ["internal:amrp:web", "internal:amrp:mobile"]
+            example: "internal:amrp:web"
+        - name: region
+          in: header
+          description: partners to be filtered by region
+          required: true
+          schema:
+            $ref: "#/components/schemas/RegionEnum"
+      responses:
+        "200":
+          description: List of saved offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OfferOnCard"
+                  metadata:
+                    $ref: "#/components/schemas/OfferOnCardMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/401NoTokenError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+    put:
+      tags:
+        - card
+      security:
+        - memberToken: []
+      summary: Update offers saved on collector's card
+      operationId: updateSavedOffersUsingPUT
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutOffersRequestBody'
+      parameters:
+        - name: x-origin-client
+          in: header
+          description: origin client value needed for downstream state call
+          required: true
+          schema:
+            type: string
+            enum: ["internal:amrp:web", "internal:amrp:mobile"]
+            example: "internal:amrp:web"
+      responses:
+        "204":
+          description: Update completed
+        "500":
+          description: Internal server error
+
+  /card/count:
+    get:
+      tags:
+        - card
+      security:
+        - memberToken: []
+      summary: Integer representing number of offers loaded on collectors card
+      operationId: getSavedOffersCountUsingGET
+      parameters:
+        - name: x-origin-client
+          in: header
+          description: origin client value needed for downstream state call
+          required: true
+          schema:
+            type: string
+            enum: ["internal:amrp:web", "internal:amrp:mobile"]
+            example: "internal:amrp:web"
+        - name: region
+          in: header
+          description: partners to be filtered by region
+          required: true
+          schema:
+            $ref: "#/components/schemas/RegionEnum"
+      responses:
+        "200":
+          description: Integer representing collecter's offer count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  onCardCount:
+                    type: integer
+                    description: number of offers on card
+                    example: 6
+        "401":
+          description: Unauthorized
+        "500":
+          description: Get offers error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /v0/offers:
+    post:
+      tags:
+        - web offers
+      summary: Get all or featured offers for web application or mobile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/FeaturedOffersRequest"
+                - $ref: "#/components/schemas/AllOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: List of offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OffersV0"
+                  metadata:
+                    $ref: "#/components/schemas/OfferMetadataWebV0"
+        "500":
+          description: Get offers error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /v0/offers (mobile):
+    post:
+      tags:
+        - mobile offers
+      summary: Get all or featured offers for web application or mobile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/FeaturedOffersRequest"
+                - $ref: "#/components/schemas/AllOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: List of offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OffersV0"
+                  metaData:
+                    $ref: "#/components/schemas/OfferMetadataMobileV0"
+        "500":
+          description: Get offers error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /v2/offers:
+    post:
+      tags:
+        - offers
+      summary: Get all or featured offers for web application
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/FeaturedOffersRequest"
+                - $ref: "#/components/schemas/AllOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: List of offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OffersV2"
+                  metadata:
+                    $ref: "#/components/schemas/OfferMetadataV2"
+        "500":
+          description: Get offers error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /v3/offers:
+    post:
+      tags:
+        - offers
+      summary: Get all or featured offers for mobile application
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/FeaturedOffersRequest"
+                - $ref: "#/components/schemas/AllOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: List of offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OffersV3"
+                  metadata:
+                    $ref: "#/components/schemas/OfferMetadataV3"
+        "500":
+          description: Get offers error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /order-card:
+    post:
+      tags:
+        - order-card
+      summary: Request number of cards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - numberOfCards
+              properties:
+                numberOfCards:
+                  type: integer
+                  example: 2
+        description: request, specifying number of cards to order
+        required: true
+      responses:
+        "200":
+          description: Confirmation of successful order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCardResponse"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+      deprecated: false
+
+  /cashlock:
+    put:
+      tags:
+        - cashlock
+      summary: Put a lock on the cash account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cashRedemptionLocked
+              properties:
+                cashRedemptionLocked:
+                  type: boolean
+                  example: false
+                  default: false
+        description: request, updating the lock on the cash account
+        required: true
+      responses:
+        "200":
+          description: Confirmation of successful update on the cash account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashLockResponse"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+      deprecated: false
+    get:
+      tags:
+        - cashlock
+      summary: Get the lock status on the cash account
+      responses:
+        "200":
+          description: Confirmation of successful retrieval of the lock status on the cash account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashLockResponse"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+      deprecated: false
+
+
+  /profile:
+    get:
+      tags:
+        - profile
+      security:
+        - memberToken: []
+      summary: Get profile
+      operationId: getProfileUsingGET
+      responses:
+        "200":
+          description: Get profile response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          description: Unauthorized
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+    put:
+      tags:
+        - profile
+      security:
+        - memberToken: []
+        - privilegedToken: ["profile:write"]
+      summary: Updates member profile
+      operationId: updateProfileUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Profile"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: Get member banner response
+          content:
+            application/json:
+              schema:
+                properties:
+                  Profile Response:
+                    type: object
+                    properties:
+                      statusCode:
+                        type: integer
+                        example: 200
+                  Balance Preference Response:
+                    type: object
+                    properties:
+                      statusCode:
+                        type: integer
+                        example: 200
+                      Status:
+                        type: boolean
+                        description: Whether balance preferences was able to update
+                        example: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  Profile Response:
+                    description: Response status of updating profile details
+                    type: object
+                    properties:
+                      statusCode:
+                        type: integer
+                        example: 401
+                  Balance Preference Response:
+                    description: Response status of updating balance preferences
+                    type: object
+                    properties:
+                      Status Code:
+                        type: integer
+                        example: 200
+                      Status:
+                        type: boolean
+                        example: false
+                        description: Whether balance preferences was able to update
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+    post:
+      tags:
+        - profile
+      security:
+        - memberToken: []
+      summary: Creates a new member profile
+      operationId: createProfileUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewProfile"
+        description: request
+        required: true
+      responses:
+        "201":
+          description: Get profile creation response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                properties:
+                  profile:
+                    type: string
+                    nullable: true
+                    default: null
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "DuplicateEmail"
+                      message:
+                        type: string
+                        example: "This email is being used on another profile. Please enter a new email address."
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /address/find:
+    get:
+      tags:
+        - canada-post-address
+      summary: Canada Post Address Lookup
+      operationId: findCanadaPostAddress
+      parameters:
+        - $ref: "#/components/parameters/SearchTermParam"
+        - $ref: "#/components/parameters/LastIdParam"
+      responses:
+        "200":
+          description: Get Address Lookup Details
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ItemsFind"
+
+  /address/retrieve:
+    get:
+      tags:
+        - canada-post-address
+      summary: Canada Post Address Retrieve
+      operationId: retrieveCanadaPostAddress
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Get Address Lookup Details
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ItemsRetrieve"
+
+  /partners:
+    get:
+      tags:
+        - partners
+      summary: Get Partners
+      operationId: getPartnersUsingGET
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+        - $ref: "#/components/parameters/FilterTypeParam"
+        - $ref: "#/components/parameters/RegionParam"
+        - $ref: "#/components/parameters/LocaleParam"
+        - $ref: "#/components/parameters/PartnerIdParam"
+        - $ref: "#/components/parameters/TypeParam"
+      responses:
+        "200":
+          description: Get partners list response
+          content:
+            "application/json":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Partners"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /v3/partners:
+    get:
+      tags:
+        - partnersV3
+      summary: Get partners from contentful and aem
+      parameters:
+        - $ref: "#/components/parameters/RegionParam"
+        - $ref: "#/components/parameters/LocaleParam"
+        - $ref: "#/components/parameters/TypeParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/LongitudeParam"
+        - $ref: "#/components/parameters/LatitudeParam"
+        - $ref: "#/components/parameters/PartnerIdParam"
+        - $ref: "#/components/parameters/SponsorCodeParam"
+        - $ref: "#/components/parameters/getMilesFeaturedParam"
+        - $ref: "#/components/parameters/CategoryParam"
+      responses:
+        "200":
+          description: Get partner response details
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/PartnersV3"
+        "400":
+          description: Validation Error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/responses/400BadRequestError"
+        "500":
+          description: Get profile error response
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /member-banner:
+    get:
+      tags:
+        - member-banner
+      security:
+        - memberToken: []
+      summary: Get collector's Member Banner
+      operationId: getMemberBannerUsingGET
+      responses:
+        "200":
+          description: Get member banner response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberBanner"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ssoURL:
+                    type: string
+                    format: uri
+                    example: "https://someurl.com/authorized?yesorno=no"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+      deprecated: false
+
+  /transactions:
+    get:
+      summary: List all transactions
+      operationId: listTransactions
+      tags:
+        - transactions
+      security:
+        - memberToken: []
+      parameters:
+        - name: from
+          in: query
+          description: The starting date for list of transactions
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2019-01-01T00:00:00-08:00"
+        - name: to
+          in: query
+          description: The end date for list of transactions
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2020-04-02T00:00:00-08:00"
+        - name: page
+          in: query
+          description: The page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: size
+          in: query
+          description: number of transactions per page
+          required: false
+          schema:
+            type: integer
+            default: 12
+            example: 99
+        - name: sort
+          in: query
+          description: sort transactions by a specific clause
+          required: false
+          schema:
+            type: string
+            default: "transactionDate,asc"
+            example: "transactionDate,desc"
+      responses:
+        "200":
+          description: An array of transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      genericActivityDtoList:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Transaction"
+                      transactionSummary:
+                        $ref: "#/components/schemas/TransactionSummary"
+                  page:
+                    $ref: "#/components/schemas/PageDetails"
+        "401":
+          description: Unauthorized
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-reader/v1/count:
+    get:
+      summary: Get number of offers
+      operationId: countOfferStateServicesGET
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      responses:
+        "200":
+          description: Number of offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 30
+                    description: number of offers
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-reader/v1/find:
+    get:
+      summary: Get offers with inputted state
+      operationId: findOfferStateServicesGET
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      parameters:
+        - name: state
+          in: query
+          description: The state on which to filter the offers
+          required: true
+          schema:
+            type: string
+            example: "load:loaded"
+            description: state of the offer
+      responses:
+        "200":
+          description: List of offers and their states
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        offerId:
+                          type: string
+                          example: "322a0036-86c3-43cb-81ee-1223e2bcrri0"
+                          description: id of offer
+                        collectorId:
+                          type: string
+                          example: "80000000001"
+                          description: collector number
+                        states:
+                          $ref: "#/components/schemas/States"
+                  returnedCount:
+                    type: integer
+                    example: 1
+                    description: number of offers returned
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-reader/v1/get:
+    get:
+      summary: Get state services by offer
+      operationId: getOfferStateServicesGET
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      parameters:
+        - name: offerId
+          in: query
+          description: The offerId from which to fetch the state
+          required: true
+          schema:
+            type: string
+            example: "322a0036-86c3-43cb-81ee-1223e2bcrri0"
+            description: id of offer
+      responses:
+        "200":
+          description: List of offers and their states
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        offerId:
+                          type: string
+                          example: "322a0036-86c3-43cb-81ee-1223e2bcrri0"
+                          description: id of offer
+                        collectorId:
+                          type: string
+                          example: "80000000001"
+                          description: collector number
+                        states:
+                          $ref: "#/components/schemas/States"
+                  requestedCount:
+                    type: integer
+                    example: 1
+                    description: number of offers requested
+                  returnedCount:
+                    type: integer
+                    example: 1
+                    description: number of offers returned
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-reader/v1/multi-count:
+    get:
+      summary: Get offer count by partner
+      operationId: getOfferStateServicesByPartnerGET
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      parameters:
+        - name: partnerId
+          in: query
+          description: The partnerId from which to fetch the number of offers
+          required: true
+          schema:
+            type: string
+            example: "4a755252-876b-478e-9440-42961525i987"
+            description: id of partner
+      responses:
+        "200":
+          description: List of offers and their states
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  counts:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    example:
+                      "4a755252-876b-478e-9440-42961525i987": 1
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-reader/v1/offer-buckets:
+    get:
+      summary: Get state services by offer buckets
+      operationId: getOfferStateServicesByBucketsGET
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      parameters:
+        - name: partnerId
+          in: query
+          description: The partnerId from which to fetch the number of offers
+          required: true
+          schema:
+            type: string
+            example: "4a755252-876b-478e-9440-42961525i987"
+            description: id of partner
+        - name: state
+          in: query
+          description: The state on which to filter the offers
+          required: true
+          schema:
+            type: string
+            example: "load:loaded"
+            description: state of the offer
+      responses:
+        "200":
+          description: List of offers and their states
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  buckets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        offers:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              offerId:
+                                type: string
+                                example: "322a0036-86c3-43cb-81ee-1223e2bcrri0"
+                                description: id of offer
+                              collectorId:
+                                type: string
+                                example: "80000000001"
+                                description: collector number
+                              states:
+                                $ref: "#/components/schemas/States"
+                        partnerId:
+                          type: string
+                          example: "4a755252-876b-478e-9440-42961525i987"
+                          description: id of partner
+                        totalCount:
+                          type: integer
+                          example: 40
+                          description: total number of offers
+                        returnedCount:
+                          type: integer
+                          example: 30
+                          description: number of offers returned
+                  returnedCount:
+                    type: integer
+                    example: 1
+                    description: number of offer-buckets returned
+                  totalCount:
+                    type: integer
+                    example: 1
+                    description: total number of offer-buckets
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+  /state-writer/v1/put:
+    put:
+      summary: Update the states of an offer
+      operationId: putOfferStateServicesPUT
+      tags:
+        - offerStateService
+      security:
+        - memberToken: []
+      requestBody:
+        description: New states for the offer
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stateChanges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      offerId:
+                        type: string
+                        example: "322a0036-86c3-43cb-81ee-1223e2bcrri0"
+                        description: id of offer
+                      states:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "load"
+                              description: name of state
+                            value:
+                              type: string
+                              example: "loaded"
+                              description: new value of state
+      responses:
+        "204":
+          description: Update completed
+        "400":
+          $ref: "#/components/responses/400BadRequestError"
+        "401":
+          $ref: "#/components/responses/401UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/403InvalidTokenError"
+        "500":
+          $ref: "#/components/responses/500InternalServerError"
+
+
+servers:
+  - url: http://localhost/services/airmiles/sling
+
+components:
+  securitySchemes:
+    memberToken:
+      type: apiKey
+      in: cookie
+      name: atokid
+    privilegedToken:
+      type: apiKey
+      in: cookie
+      name: patokid
+
+  schemas:
+    ClosestLocation:
+      type: object
+      description: Location of the partner relative to the lat/long provided in the request
+      properties:
+        Location:
+          type: object
+          description: Latitude and Longitude of the partner
+          properties:
+            lat:
+              type: number
+              example: -49.0
+              description: latitude of partner
+            lon:
+              type: number
+              example: 100.55
+              description: longitude of partner
+        distance:
+          type: integer
+          example: 150
+          description: Distance of partner from lat/lng provided in the request
+        address:
+          type: object
+          properties:
+            addressLine1:
+              type: string
+              example: "425 Adelaide Street West"
+            addressLine2:
+              type: string
+              example: "Block C"
+            city:
+              type: string
+              example: "Toronto"
+            postalCode:
+              type: string
+              pattern: '^[A-Z]\d[A-Z]\d[A-z]\d'
+              example: "M5V0H5"
+            province:
+              type: string
+              enum:
+                [
+                  "Newfoundland and Labrador",
+                  "Prince Edward Island",
+                  "Nova Scotia",
+                  "New Brunswick",
+                  "Quebec",
+                  "Ontario",
+                  "Manitoba",
+                  "Saskatchewan",
+                  "Alberta",
+                  "British Columbia",
+                  "Yukon",
+                  "Northwest Territories",
+                  "Nunavut"
+                ]
+              example: "Ontario"
+              description: collector's province of residence
+            provinceCode:
+              type: string
+              enum:
+                [
+                  "AB",
+                  "BC",
+                  "MB",
+                  "NB",
+                  "NL",
+                  "NS",
+                  "NT",
+                  "NU",
+                  "ON",
+                  "PE",
+                  "QC",
+                  "SK",
+                  "YT",
+                  "TB",
+                ]
+              example: "ON"
+
+    options:
+      type: object
+      properties:
+        key:
+          type: string
+          example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+        name:
+          type: string
+          example: "Grocery"
+        totalOffers:
+          type: string
+          example: "3"
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/options'
+
+    Reward:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 95079
+        name:
+          type: string
+          example: "a name"
+        type:
+          type: string
+          example: "merchandise"
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "primary"
+              description:
+                type: string
+                example: "a description"
+              url:
+                type: string
+                example: "https://someurl.com/photo.png"
+              sizes:
+                type: object
+                properties:
+                  350x350:
+                    type: string
+                    example: "https://someurl.com/photo.png"
+                  74x74:
+                    type: string
+                    example: "https://someurl.com/photo.png"
+                  46x46:
+                    type: string
+                    example: "https://someurl.com/photo.png"
+        supplier_items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 98627.0
+              external_supplier_id:
+                type: string
+                example: "PN29720"
+              fulfillment:
+                type: object
+                properties:
+                  shipping_estimate:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      example:
+                        "CAD": "15.31"
+                  shipping_included:
+                    type: boolean
+                    example: true
+                  handling_estimate:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      example:
+                        "CAD": "3.1"
+                  handling_included:
+                    type: boolean
+                    example: false
+              prices:
+                type: object
+                properties:
+                  regular_price:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      example:
+                        "XRO-ADM": "2790"
+                  sale_price:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      example:
+                        "XRO-ADM": "2511"
+                  retail_price:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      example:
+                        "XRO-ADM": "4000"
+              pricing:
+                type: object
+                properties:
+                  CAD:
+                    type: object
+                    properties:
+                      regular_price:
+                        type: string
+                        example: "167.00"
+                      sale_price:
+                        type: string
+                        example: "167.00"
+                  tax_eligible:
+                    type: boolean
+                    example: true
+              order_token:
+                type: string
+                example: "tYgULoceNflhQbblugYm-OffufaSF0pgE-F_7UutYVh="
+              availability_status:
+                type: string
+                enum: ["AVAILABLE", "OUT_OF_STOCK"]
+                example: "AVAILABLE"
+              offer:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 659.0
+                  starts_at:
+                    type: string
+                    format: date-time
+                    example: "2018-09-13T21:44:00.000Z"
+                  ends_at:
+                    type: string
+                    format: date-time
+                    example: "2023-09-13T21:44:00.000Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2019-11-19T18:50:36.419Z"
+                  type:
+                    type: string
+                    example: "simple"
+                  supplier_id:
+                    type: number
+                    example: 631.0
+                  supplier_name:
+                    type: string
+                    example: "Supplier Name"
+                  supplier_code:
+                    type: string
+                    example: "code_code"
+                  supplier_url:
+                    type: string
+                    example: "http://suplierurl.com"
+                  supplier_currency_code:
+                    type: string
+                    example: "CAD"
+                  supplier_description:
+                    type: string
+                    example: "Some description from the supplier"
+
+    Profile:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+          example: "80000000001"
+          description: collector number
+        membershipType:
+          type: string
+          example: "I"
+          description: collector's account type (Individual | Business)
+          enum: ["I", "B"]
+          readOnly: true
+        membershipStatus:
+          type: string
+          example: "A"
+          enum: ["A", "DO", "C", "D", "V"]
+          description: >
+            collector's program status:
+              * `A` - Active
+              * `DO` - Dormant
+              * `C` - Closed
+              * `D` - Deleted
+              * `V` - Victim
+          readOnly: true
+        tier:
+          type: string
+          example: "B"
+          enum: ["B", "G", "O"]
+          description: >
+            collector's card tier:
+              * `B` - Blue
+              * `G` - Gold
+              * `O` - Onyx
+          readOnly: true
+        ghost:
+          type: boolean
+          example: true
+          readOnly: true
+        personalDetails:
+          type: object
+          properties:
+            dateOfBirth:
+              type: string
+              format: date
+              example: "1967-09-27"
+              description: date of birth
+            firstName:
+              type: string
+              example: "Mary"
+              description: collector's first name
+            lastName:
+              type: string
+              example: "Smith"
+              description: collector's last name
+        contactDetails:
+          type: object
+          required:
+            - email
+            - emailSecureFlag
+            - emailValidateFlag
+            - homePhone
+            - workPhone
+            - mobilePrimary
+          properties:
+            email:
+              type: string
+              example: "email@loyalty.com"
+              description: collector's e-mail address
+            emailSecureFlag:
+              type: boolean
+              example: true
+              description: email was updated behind pin
+            emailValidateFlag:
+              type: boolean
+              example: false
+              description: email is valid
+            homePhone:
+              type: string
+              nullable: true
+              pattern: ^\d{10}$
+              example: "6475555555"
+              description: collector's home phone number
+            workPhone:
+              type: string
+              nullable: true
+              pattern: ^\d{10}$
+              example: "4165555555"
+              description: collector's work phone number
+            mobilePrimary:
+              type: string
+              nullable: true
+              pattern: ^\d{10}$
+              example: "5145555555"
+              description: collector's primary mobile phone number
+        address:
+          type: object
+          required:
+            - line1
+            - line2
+            - province
+            - city
+            - postalCode
+          properties:
+            line1:
+              type: string
+              description: collector's address line 1
+              example: "600 Oak Street"
+            line2:
+              type: string
+              nullable: true
+              description: collector's address line 2
+              example: "Unit 6"
+            province:
+              type: string
+              enum: ["NL", "PE", "NS", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU"]
+              example: "ON"
+              description: collector's province of residence
+            city:
+              type: string
+              example: "MONTREAL"
+              description: collector's city
+            postalCode:
+              type: string
+              pattern: ^[A-Za-z]\d[A-Za-z]\d[A-Za-z]\d$
+              description: collector's postal code
+              example: "M5V3C1"
+        preferenceDetails:
+          type: object
+          properties:
+            amCashRatio:
+              type: integer
+              format: int32
+              example: 100
+              minimum: 0
+              maximum: 100
+              nullable: false
+              description: Air miles cash ratio
+            balanceSuppression:
+              type: boolean
+              example: false
+              nullable: false
+              description: Balance suppression
+            instantRedemptionSuppression:
+              type: boolean
+              example: false
+              nullable: false
+              description: Instant redemption suppression
+            languagePreference:
+              type: string
+              example: "ENGLISH"
+              nullable: false
+              description: Preferred language
+              enum: ["ENGLISH", "FRENCH"]
+            preferredAddressForCommunication:
+              type: string
+              example: "H"
+              nullable: false
+              description: Preferred address for communication - see profile-api/options for allowed values
+        optInDetails:
+          type: object
+          properties:
+            noContact:
+              type: boolean
+              example: false
+              nullable: false
+              description: Disable all marketing communication
+            phoneCall:
+              type: boolean
+              example: true
+              nullable: false
+              description: Opt-in to phone communication
+            sms:
+              type: boolean
+              example: true
+              nullable: false
+              description: Opt-in to SMS communication
+            email:
+              type: boolean
+              example: true
+              nullable: false
+              description: Opt-in to email communication
+            directMail:
+              type: boolean
+              example: true
+              nullable: false
+              description: Opt-in to direct mail
+        additionalDetails:
+          type: object
+          properties:
+            maritalStatus:
+              type: string
+              example: "M"
+              description: Marital status - see profileapi/options for allowed values
+            householdIncome:
+              type: string
+              example: "2"
+              description: Household income - see profileapi/options for allowed values
+            numberOfAdults:
+              type: string
+              example: "2"
+            totalMembers:
+              type: integer
+              format: int32
+              example: 2
+              description: Number of members in household
+
+    NewProfile:
+      type: object
+      properties:
+        personalDetails:
+          type: object
+          required:
+            - firstName
+            - lastName
+            - dateOfBirth
+          properties:
+            dateOfBirth:
+              type: string
+              format: date
+              example: "1967-09-27"
+              description: date of birth
+            firstName:
+              type: string
+              example: "Mary"
+              description: collector's first name
+            lastName:
+              type: string
+              example: "Smith"
+              description: collector's last name
+        address:
+          type: object
+          required:
+            - line1
+            - province
+            - city
+            - postalCode
+          properties:
+            line1:
+              type: string
+              description: collector's address line 1
+              example: "600 Oak Street"
+            line2:
+              type: string
+              nullable: true
+              description: collector's address line 2
+              example: "Unit 6"
+            province:
+              type: string
+              enum: ["NL", "PE", "NS", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU"]
+              example: "ON"
+              description: collector's province of residence
+            city:
+              type: string
+              example: "MONTREAL"
+              description: collector's city
+            postalCode:
+              type: string
+              pattern: '^[A-Za-z]\d[A-Za-z]\d[A-Za-z]\d$'
+              description: collector's postal code
+              example: "M5V3C1"
+        contactDetails:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              example: "email@loyalty.com"
+              description: collector's e-mail address
+        optInDetails:
+          type: object
+          properties:
+            noContact:
+              type: boolean
+              example: false
+              nullable: false
+              description: Disable all marketing communication
+            email:
+              type: boolean
+              example: true
+              nullable: false
+              description: Opt-in to email communication
+
+    ItemsFind:
+      type: array
+      items:
+        type: object
+        properties:
+          Id:
+            type: string
+            example: "CA|CP|ENG|BC-CRESTON-RECLAMATION_RD"
+            description: Id of the address to lookup
+          Text:
+            type: string
+            example: "Reclamation Rd"
+          Highlight:
+            type: string
+            example: "0-14"
+          Cursor:
+            type: integer
+            example: 0
+          Description:
+            type: string
+            example: "Creston, BC, V0B 1G7 - 19 Addresses"
+          Next:
+            type: string
+            description: Specifies next action
+            example: "Find"
+      title: ItemsFind
+    ItemsRetrieve:
+      type: array
+      items:
+        type: object
+        properties:
+          Id:
+            type: string
+            example: "CA|CP|ENG|BC-CRESTON-RECLAMATION_RD"
+            description: Id of the address to lookup
+          DomesticId:
+            type: string
+            example: "26188"
+          Language:
+            type: string
+            example: "ENG"
+          LanguageAlternatives:
+            type: string
+            example: "ENG,FRE"
+          Department:
+            type: string
+            example: "Department Name"
+          Company:
+            type: string
+            example: "Company Name"
+          SubBuilding:
+            type: string
+            example: "F"
+          BuildingNumber:
+            type: string
+            example: "80"
+          BuildingName:
+            type: string
+            example: "Building Name"
+          SecondaryStreet:
+            type: string
+            example: "Secondary St"
+          Street:
+            type: string
+            example: "Dundas St"
+          Block:
+            type: string
+            example: "C"
+          Neighbourhood:
+            type: string
+            example: "Some Neighbourhood"
+          District:
+            type: string
+            example: "B"
+          City:
+            type: string
+            example: "London"
+          Line1:
+            type: string
+            example: "F-80 Dundas St"
+          Line2:
+            type: string
+            example: "Floor 2"
+          Line3:
+            type: string
+            example: "Suite 5"
+          Line4:
+            type: string
+            example: "Northwest corner"
+          Line5:
+            type: string
+            example: "5th row"
+          AdminAreaName:
+            type: string
+            example: "John Smith"
+          AdminAreaCode:
+            type: string
+            example: "555"
+          Province:
+            type: string
+            example: "ON"
+          ProvinceName:
+            type: string
+            example: "Ontario"
+          ProvinceCode:
+            type: string
+            example: "ON"
+          PostalCode:
+            type: string
+            example: "N6A 6B4"
+          CountryName:
+            type: string
+            example: "Canada"
+          CountryIso2:
+            type: string
+            example: "CA"
+          CountryIso3:
+            type: string
+            example: "CAN"
+          CountryIsoNumber:
+            type: integer
+            example: 124
+          SortingNumber1:
+            type: string
+            example: "1"
+          SortingNumber2:
+            type: string
+            example: "2"
+          Barcode:
+            type: string
+            example: "barcode"
+          Label:
+            type: string
+            example: "F-80 Dundas St\nLONDON ON N6A 6B4\nCANADA"
+          Type:
+            type: string
+            example: "Commercial"
+          DataLevel:
+            type: string
+            example: "Premise"
+      title: ItemsRetrieve
+
+    AllOffersRequest:
+      type: object
+      description: Partner Detail Page Request Payload
+      properties:
+        region:
+          $ref: "#/components/schemas/Region"
+          example: "ON"
+        locale:
+          $ref: "#/components/schemas/Locale"
+          example: "en-CA"
+        sortedBy:
+          $ref: "#/components/schemas/SortOrder"
+          example: "EndingSoonest"
+        itemsPerPage:
+          type: integer
+          example: 96
+        currentPage:
+          type: integer
+          example: 1
+        partnerIds:
+          type: array
+          items:
+            type: string
+            example: "38178928-9281-42aa-9f70-8c39c453baf1"
+        categories:
+          type: array
+          items:
+            type: string
+            example: "travel"
+        subCategories:
+          type: array
+          items:
+            type: string
+            example: "lifestyle"
+        offerTypes:
+          type: array
+          items:
+            type: string
+            example: "buy"
+
+    FeaturedOffersRequest:
+      type: object
+      description: Featured offers payload
+      properties:
+        latitude:
+          type: number
+          description: users geographic latitude
+          minimum: -90.0
+          maximum: 90.0
+          example: 45.5
+        longitude:
+          type: number
+          description: users geographic longitude
+          minimum: -180.0
+          maximum: 180.0
+          example: -79.44
+        region:
+          $ref: "#/components/schemas/Region"
+          example: "ON"
+        locale:
+          $ref: "#/components/schemas/Locale"
+          example: "fr-CA"
+        sortedBy:
+          $ref: "#/components/schemas/SortOrder"
+          example: "EndingSoonest"
+        numOffers:
+          type: integer
+          example: 7
+        numPartners:
+          type: integer
+          example: 8
+        partnerIndex:
+          type: integer
+          description: Partner index represents the index from which the count will start when applying numPartners. If numPartners is 8 and partnerIndex is 0 we'll get the top 8 priority partners, if partnerIndex is 8 and numPartners is 4 we'll get 8, 9, 10, 11.
+          example: 0
+
+    OfferMetadataMobileV0:
+      type: object
+      properties:
+        totalOffers:
+          type: integer
+          example: 1224
+          description: The number of total offers returned in the response
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/options'
+        partners:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/PartnersV3'
+              - $ref: '#/components/schemas/ClosestLocation'
+
+    OfferMetadataWebV0:
+      type: object
+      properties:
+        TotalOffers:
+          type: integer
+          example: 1224
+          description: The number of total offers returned in the response
+        totalPartners:
+          type: integer
+          example: 12
+          description: The total number of partners that have offers
+        Partners:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/PartnersV3'
+              - $ref: '#/components/schemas/ClosestLocation'
+        OfferCategory1:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 161
+        OfferCategory2:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 162
+
+    OfferMetadataV2:
+      type: object
+      properties:
+        totalOffers:
+          type: integer
+          example: 1224
+          description: The number of total offers returned in the response
+        Partners:
+          type: array
+          items:
+            type: object
+            properties:
+              PartnerId:
+                type: string
+                example: "38178928-9281-42aa-9f70-8c39c453baf1"
+                description: Unique id for partner
+              NumberOfOffers:
+                type: integer
+                example: 3
+                description: Number of offers returned for this particular partner
+              PDPUrl:
+                type: string
+                example: "https://qa.airmiles.ca/en/get-miles/partners/alamo.html"
+                description: URL of the product details page for this partner
+              PartnerName:
+                type: string
+                example: "Metro"
+              PartnerPriority:
+                type: integer
+                example: 33
+                description: Priority number for the partner
+        OfferCategory1:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 161
+        OfferCategory2:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 162
+        OfferCategory3:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 163
+
+    OfferMetadataV3:
+      type: object
+      properties:
+        TotalOffers:
+          type: integer
+          example: 1224
+          description: The number of total offers returned in the response
+        Partners:
+          type: array
+          items:
+            type: object
+            properties:
+              PartnerId:
+                type: string
+                example: "38178928-9281-42aa-9f70-8c39c453baf1"
+                description: Unique id for partner
+              NumberOfOffers:
+                type: integer
+                example: 3
+                description: Number of offers returned for this particular partner
+              PDPUrl:
+                type: string
+                example: "https://qa.airmiles.ca/en/get-miles/partners/alamo.html"
+                description: URL of the product details page for this partner
+              PartnerName:
+                type: string
+                example: "Metro"
+              PartnerPriority:
+                type: integer
+                example: 33
+                description: Priority number for the partner
+              type:
+                type: array
+                items:
+                  type: string
+                  enum: ["in-store", "cash", "fi", "load+go"]
+                  example: ["in-store", "cash"]
+              baseEarnRate:
+                type: string
+                example: "1 Mile for every $20 spent per transaction"
+              sponsorCodes:
+                type: array
+                items:
+                  type: string
+                example: ["ABD", "RED"]
+              fullLogo:
+                $ref: "#/components/schemas/Logo"
+              maxCashMiles:
+                type: string
+                example: "500 Cash Miles max redemption"
+              ClosestLocation:
+                type: object
+                description: Location of the partner relative to the lat/long provided in the request
+                properties:
+                  Location:
+                    type: object
+                    description: Latitude and Longitude of the partner
+                    properties:
+                      lat:
+                        type: number
+                        example: -49.0
+                        description: latitude of partner
+                      lon:
+                        type: number
+                        example: 100.55
+                        description: longitude of partner
+                  distance:
+                    type: integer
+                    example: 150
+                    description: Distance of partner from lat/lng provided in the request
+                  address:
+                    type: object
+                    properties:
+                      addressLine1:
+                        type: string
+                        example: "425 Adelaide Street West"
+                      addressLine2:
+                        type: string
+                        example: "Block C"
+                      city:
+                        type: string
+                        example: "Toronto"
+                      postalCode:
+                        type: string
+                        pattern: '^[A-Z]\d[A-Z]\d[A-z]\d'
+                        example: "M5V0H5"
+                      province:
+                        type: string
+                        enum:
+                          [
+                            "Newfoundland and Labrador",
+                            "Prince Edward Island",
+                            "Nova Scotia",
+                            "New Brunswick",
+                            "Quebec",
+                            "Ontario",
+                            "Manitoba",
+                            "Saskatchewan",
+                            "Alberta",
+                            "British Columbia",
+                            "Yukon",
+                            "Northwest Territories",
+                            "Nunavut"
+                          ]
+                        example: "Ontario"
+                        description: collector's province of residence
+                      provinceCode:
+                        type: string
+                        enum:
+                          [
+                            "AB",
+                            "BC",
+                            "MB",
+                            "NB",
+                            "NL",
+                            "NS",
+                            "NT",
+                            "NU",
+                            "ON",
+                            "PE",
+                            "QC",
+                            "SK",
+                            "YT",
+                            "TB",
+                          ]
+                        example: "ON"
+        OfferCategory1:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 161
+        OfferCategory2:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 162
+        OfferCategory3:
+          type: array
+          items:
+            type: object
+            properties:
+              CategoryId:
+                type: string
+                example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+              NumberOfOffers:
+                type: integer
+                example: 163
+
+    OfferOnCardMetadata:
+      type: object
+      properties:
+        totalPartners:
+          type: integer
+          example: "100"
+        TotalOffers:
+          type: integer
+          example: "100"
+        partners:
+          type: array
+          items:
+            type: object
+            properties:
+              numberOfOffers:
+                type: integer
+                example: 3
+                description: Number of offers returned for this particular partner
+              PartnerId:
+                type: string
+                example: "38178928-9281-42aa-9f70-8c39c453baf1"
+                description: Unique id for partner
+              PDPUrl:
+                type: string
+                example: "https://qa.airmiles.ca/en/get-miles/partners/alamo.html"
+                description: URL of the product details page for this partner
+              PartnerName:
+                type: string
+                example: "Metro"
+              PartnerPriority:
+                type: integer
+                example: 33
+                description: Priority number for the partner
+              baseEarnRate:
+                type: string
+                example: "1 Mile for every $20 spent per transaction"
+              sponsorCodes:
+                type: array
+                items:
+                  type: string
+                  example: ["ABD", "RED"]
+              maxCashMiles:
+                type: string
+                example: "500 Cash Miles max redemption"
+              fullLogo:
+                type: array
+                items:
+                  type: object
+                  oneOf:
+                    - $ref: "#/components/schemas/PartnerImageV3ForMobile"
+                    - $ref: "#/components/schemas/PartnerImageV3"
+              type:
+                type: array
+                items:
+                  type: string
+                  enum: ["in-store", "cash", "fi", "load+go"]
+                  example: ["cash"]
+              closestLocation:
+                type: object
+                description: Location of the partner relative to the lat/long provided in the request
+                properties:
+                  location:
+                    type: object
+                    description: Latitude and Longitude of the partner
+                    properties:
+                      lat:
+                        type: number
+                        example: -49.0
+                        description: latitude of partner
+                      lon:
+                        type: number
+                        example: 100.55
+                        description: longitude of partner
+                  distance:
+                    type: integer
+                    example: 100
+                    description: Distance of partner from lat/lng provided in the request
+                  address:
+                    type: object
+                    properties:
+                      addressLine1:
+                        type: string
+                        example: "425 Adelaide Street West"
+                      addressLine2:
+                        type: string
+                        example: "Block C"
+                      city:
+                        type: string
+                        example: "Toronto"
+                      postalCode:
+                        type: string
+                        pattern: '^[A-Z]\d[A-Z]\d[A-z]\d'
+                        example: "M5V0H5"
+                      province:
+                        type: string
+                        enum:
+                          [
+                            "Newfoundland and Labrador",
+                            "Prince Edward Island",
+                            "Nova Scotia",
+                            "New Brunswick",
+                            "Quebec",
+                            "Ontario",
+                            "Manitoba",
+                            "Saskatchewan",
+                            "Alberta",
+                            "British Columbia",
+                            "Yukon",
+                            "Northwest Territories",
+                            "Nunavut"
+                          ]
+                        example: "Ontario"
+                        description: collector's province of residence
+                      provinceCode:
+                        type: string
+                        enum:
+                          [
+                            "AB",
+                            "BC",
+                            "MB",
+                            "NB",
+                            "NL",
+                            "NS",
+                            "NT",
+                            "NU",
+                            "ON",
+                            "PE",
+                            "QC",
+                            "SK",
+                            "YT",
+                            "TB",
+                          ]
+                        example: "ON"
+
+    OffersV0:
+      type: object
+      properties:
+        active:
+          type: boolean
+          example: true
+        awardShort:
+          type: string
+          example: "Save $10"
+        awardType:
+          type: string
+          example: "flatDiscount"
+        baseCashRedemption:
+          type: string
+          example: 95
+        cashierInstruction:
+          type: string
+          example: "cashier Instruction example"
+        description:
+          type: string
+          example: "Office item description"
+        displayDate:
+          type: string
+          format: date-time
+          example: "2020-08-31T23:59:59"
+        displayPriority:
+          type: string
+          example: 1000
+          description: "offer display priority"
+        endDate:
+          type: string
+          format: date-time
+          example: "2020-08-31T23:59:59"
+        id:
+          type: string
+          example: "04621ede-2892-4563-9485-81d5edca76c0"
+        image:
+          type: object
+          properties:
+            path:
+              type: string
+              example: "http://t3.somesite.com/some/image/url/path"
+        legalText:
+          type: string
+          example: "* Offer valid from October 1, 2019 to April 14, 2020. Valid at participating Alamo Rent a Car locations (excluding Banner X English locations) in Alberta, British Columbia, Manitoba, New Brunswick, Newfoundland and Labrador, Northwest Territories, Nova Scotia, Nunavut, Ontario, Prince Edward Island, Quebec, Saskatchewan, Thunder Bay and Yukon (excluding City Name English )"
+        massOffer:
+          type: boolean
+          example: true
+        mechanisms:
+          type: array
+          items:
+            type: object
+            properties:
+              mechanismType:
+                enum:
+                  [
+                    "noAction",
+                    "barcodeUPC",
+                    "barcodeEAN",
+                    "barcodeCODE39",
+                    "barcodeCODE128",
+                    "plu",
+                    "couponCode",
+                    "button",
+                    "load+go",
+                  ]
+                example: "barcodeUPC"
+              mechanismValue:
+                type: string
+                example: "12300000000000000"
+              mechanismLabel:
+                type: string
+                example: "Shop now"
+        offerCategory1:
+          type: string
+          example: "22b666ae-97c2-4e57-a437-e977de6beef4"
+        offerCategory1Label:
+          type: string
+          example: "Grocery"
+        offerCategory2:
+          type: string
+          example: "d614fed9-8c17-4c20-a179-2351e54679c1"
+        offerCategory2Label:
+          type: string
+          example: "Beverages"
+        offerCode:
+          type: string
+          example: "13WIP0TOLW7AXJ2JL21S"
+        offerType:
+          type: string
+          example: "buy"
+          enum: ["buy", "spend", "custom", "am-cash-earn", "am-cash-discount"]
+        partnerId:
+          type: string
+          example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+        partnerName:
+          type: string
+          example: "Alamo Rent a Car"
+        programPriority:
+          type: string
+          example: 1000
+        promotionLabel:
+          type: string
+          example: "Base Offer"
+        qualifier:
+          type: string
+          example: "Buy 85 Office item in-store or online*"
+        regions:
+          $ref: "#/components/schemas/Region"
+          example: ["on"]
+        startDate:
+          type: string
+          format: date-time
+          example: "2020-05-01T00:00:00"
+        states:
+          $ref: "#/components/schemas/States"
+        tiers:
+          type: array
+          items:
+            type: object
+            properties:
+              awardLong:
+                type: string
+                example: "Save $10"
+              awardValue:
+                type: string
+                example: "10.0"
+              qualifierLong:
+                type: string
+                example: "Buy 85 Office item in-store or online*"
+              qualifierValue:
+                type: string
+                example: "85.0"
+
+    OffersV2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          example: true
+        availability:
+          type: array
+          items:
+            type: string
+            enum: ["inStore", "cash", "online", "fi", "loadAndGo"]
+            example: ["inStore"]
+        awardShort:
+          type: string
+          example: "Save $10"
+        awardType:
+          type: string
+          example: "flatDiscount"
+        baseCashRedemption:
+          type: integer
+          example: 95
+        description:
+          type: string
+          example: "Office item description"
+        endDate:
+          type: string
+          format: date-time
+          example: "2020-08-31T23:59:59"
+        image:
+          type: string
+          example: "http://t3.somesite.com/some/image/url/path"
+        legalText:
+          type: string
+          example: "* Offer valid from October 1, 2019 to April 14, 2020. Valid at participating Alamo Rent a Car locations (excluding Banner X English locations) in Alberta, British Columbia, Manitoba, New Brunswick, Newfoundland and Labrador, Northwest Territories, Nova Scotia, Nunavut, Ontario, Prince Edward Island, Quebec, Saskatchewan, Thunder Bay and Yukon (excluding City Name English )"
+        massOffer:
+          type: boolean
+          example: true
+        mechanisms:
+          type: array
+          items:
+            type: object
+            properties:
+              mechanismType:
+                enum:
+                  [
+                    "noAction",
+                    "barcodeUPC",
+                    "barcodeEAN",
+                    "barcodeCODE39",
+                    "barcodeCODE128",
+                    "plu",
+                    "couponCode",
+                    "button",
+                    "load+go",
+                  ]
+                example: "barcodeUPC"
+              mechanismValue:
+                type: string
+                example: "12300000000000000"
+              mechanismLabel:
+                type: string
+                example: "Shop now"
+              mechanismTitle:
+                type: string
+                example: "Title example"
+              mechanismText:
+                type: string
+                example: "Text example"
+        offerCategory:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+              level:
+                type: integer
+                example: 1
+              text:
+                type: string
+                example: "Office"
+        offerType:
+          type: string
+          enum: ["buy", "spend", "custom", "am-cash-earn", "am-cash-discount"]
+          example: "buy"
+        partnerDetailUrl:
+          type: string
+          example: "http://some.com/url/to/some/partner/details"
+        partnerDisplayPriority:
+          type: integer
+          example: 1000
+        partnerId:
+          type: string
+          example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+        partnerLogos:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Alamo Rent a Car"
+            url:
+              type: string
+              example: "http://some.com/url"
+            sources:
+              type: array
+              items:
+                type: string
+                example: "http://some.com/source"
+        partnerName:
+          type: string
+          example: "Alamo Rent a Car"
+        partnerPriority:
+          type: integer
+          example: 10
+        partnerRegion:
+          $ref: "#/components/schemas/Region"
+          example: ["on"]
+        partnerUrl:
+          type: string
+          example: "http://someurl.com/partner"
+        promoDisplayPriority:
+          type: integer
+          example: 570
+        promotionLabel:
+          type: string
+          example: "Base Offer"
+        qualifierShort:
+          type: string
+          example: "Buy 85 Office item in-store or online*"
+        redemptionCodeReqInPurchase:
+          type: boolean
+          example: false
+        startDate:
+          type: string
+          format: date-time
+          example: "2020-05-01T00:00:00"
+        status:
+          type: string
+          example: "A"
+        sysIsCouponOffer:
+          type: boolean
+          example: false
+        sysOfferCode:
+          type: string
+          example: "AAAABBBBBCCCDDDD"
+        sysOfferId:
+          type: string
+          example: "b24cd378-3510-42d8-8629-0994c7f73e14"
+        sysOfferName:
+          type: string
+          example: "2f921eae-69cc-4791-8e84-f5a750cadb71"
+        sysOfferOptInRequired:
+          type: boolean
+          example: true
+        sysOfferShortDesc:
+          type: string
+          example: "Save $10_Buy 85 Office item in-store or online*_Alamo Rent a Car"
+        sysOfferTermsAndConditions:
+          type: string
+          example: "Offer valid from October 1  2019 to April 14  2020  Valid at participating Alamo Rent a Car locations  excluding Banner X English locations  in Alberta  British Columbia  Manitoba  New Brunswick  Newfoundland and Labrador  Northwest Territories  Nova Scotia  Nunavut  Ontario  Prince Edward Island  Quebec  Saskatchewan  Thunder Bay and Yukon  excluding City Name English"
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "4db99143-1768-4f85-a44a-d6fa16011f7b"
+              text:
+                type: string
+                example: "Mega Miles"
+        tiers:
+          type: array
+          items:
+            type: object
+            properties:
+              awardLong:
+                type: string
+                example: "Save $10"
+              awardValue:
+                type: string
+                example: "10.0"
+              qualifierLong:
+                type: string
+                example: "Buy 85 Office item in-store or online*"
+              qualifierValue:
+                type: string
+                example: "85.0"
+
+    OffersV3:
+      type: object
+      properties:
+        active:
+          type: boolean
+          example: true
+        availability:
+          type: array
+          items:
+            type: string
+            enum: ["inStore", "cash", "online", "fi", "loadAndGo"]
+            example: ["cash"]
+        awardShort:
+          type: string
+          example: "Save $10"
+        awardType:
+          type: string
+          example: "flatDiscount"
+        baseCashRedemption:
+          type: integer
+          example: 95
+        description:
+          type: string
+          example: "Office item description"
+        endDate:
+          type: string
+          format: date-time
+          example: "2020-08-31T23:59:59"
+        image:
+          type: string
+          example: "http://t3.somesite.com/some/image/url/path"
+        legalText:
+          type: string
+          example: "* Offer valid from October 1, 2019 to April 14, 2020. Valid at participating Alamo Rent a Car locations (excluding Banner X English locations) in Alberta, British Columbia, Manitoba, New Brunswick, Newfoundland and Labrador, Northwest Territories, Nova Scotia, Nunavut, Ontario, Prince Edward Island, Quebec, Saskatchewan, Thunder Bay and Yukon (excluding City Name English )"
+        massOffer:
+          type: boolean
+          example: true
+        mechanisms:
+          type: array
+          items:
+            type: object
+            properties:
+              mechanismType:
+                enum:
+                  [
+                    "noAction",
+                    "barcodeUPC",
+                    "barcodeEAN",
+                    "barcodeCODE39",
+                    "barcodeCODE128",
+                    "plu",
+                    "couponCode",
+                    "button",
+                    "load+go",
+                  ]
+                example: "barcodeUPC"
+              mechanismValue:
+                type: string
+                example: "12300000000000000"
+              mechanismLabel:
+                type: string
+                example: "Shop now"
+              mechanismTitle:
+                type: string
+                example: "Title example"
+              mechanismText:
+                type: string
+                example: "Text example"
+        offerCategory:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+              level:
+                type: integer
+                example: 1
+              text:
+                type: string
+                example: "Office"
+        offerType:
+          type: string
+          example: "buy"
+          enum: ["buy", "spend", "custom", "am-cash-earn", "am-cash-discount"]
+        partnerDetailUrl:
+          type: string
+          example: "http://some.com/url/to/some/partner/details"
+        partnerDisplayPriority:
+          type: integer
+          example: 1000
+        partnerId:
+          type: string
+          example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+        partnerLogos:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Alamo Rent a Car"
+            url:
+              type: string
+              example: "http://some.com/url"
+            sources:
+              type: array
+              items:
+                type: string
+                example: "http://some.come/source"
+        partnerName:
+          type: string
+          example: "Alamo Rent a Car"
+        partnerPriority:
+          type: integer
+          example: 10
+        partnerRegion:
+          $ref: "#/components/schemas/Region"
+          example: ["on"]
+        partnerUrl:
+          type: string
+          example: "http://someurl.com/partner"
+        promoDisplayPriority:
+          type: integer
+          example: 570
+        promotionLabel:
+          type: string
+          example: "Base Offer"
+        qualifierShort:
+          type: string
+          example: "Buy 85 Office item in-store or online*"
+        redemptionCodeReqInPurchase:
+          type: boolean
+          example: false
+        startDate:
+          type: string
+          format: date-time
+          example: "2020-05-01T00:00:00"
+        states:
+          $ref: "#/components/schemas/States"
+        status:
+          type: string
+          example: "A"
+        sysIsCouponOffer:
+          type: boolean
+          example: false
+        sysOfferCode:
+          type: string
+          example: "AAAABBBBBCCCDDDD"
+        sysOfferId:
+          type: string
+          example: "b24cd378-3510-42d8-8629-0994c7f73e14"
+        sysOfferName:
+          type: string
+          example: "2f921eae-69cc-4791-8e84-f5a750cadb71"
+        sysOfferOptInRequired:
+          type: boolean
+          example: true
+        sysOfferShortDesc:
+          type: string
+          example: "Save $10_Buy 85 Office item in-store or online*_Alamo Rent a Car"
+        sysOfferTermsAndConditions:
+          type: string
+          example: "Offer valid from October 1  2019 to April 14  2020  Valid at participating Alamo Rent a Car locations  excluding Banner X English locations  in Alberta  British Columbia  Manitoba  New Brunswick  Newfoundland and Labrador  Northwest Territories  Nova Scotia  Nunavut  Ontario  Prince Edward Island  Quebec  Saskatchewan  Thunder Bay and Yukon  excluding City Name English"
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "4db99143-1768-4f85-a44a-d6fa16011f7b"
+              text:
+                type: string
+                example: "Mega Miles"
+        tiers:
+          type: array
+          items:
+            type: object
+            properties:
+              awardLong:
+                type: string
+                example: "Save $10"
+              awardValue:
+                type: string
+                example: "10.0"
+              qualifierLong:
+                type: string
+                example: "Buy 85 Office item in-store or online*"
+              qualifierValue:
+                type: string
+                example: "85.0"
+
+    OfferOnCard:
+      type: object
+      properties:
+        tiers:
+          type: array
+          items:
+            type: object
+            properties:
+              qualifierLong:
+                type: string
+                example: "Buy 85 Office item in-store or online*"
+              qualifierValue:
+                type: string
+                example: "85.0"
+              awardLong:
+                type: string
+                example: "Save $10"
+              awardValue:
+                type: string
+                example: "10.0"
+        regions:
+          type: array
+          items:
+            type: string
+            example: ["ON"]
+        mechanisms:
+          type: array
+          items:
+            type: object
+            properties:
+              mechanismType:
+                enum: ["noAction", "barcodeUPC", "barcodeEAN", "barcodeCODE39", "barcodeCODE128","plu","couponCode","button","load+go"]
+                example: "barcodeUPC"
+              mechanismValue:
+                type: string
+                example: "12300000000000000"
+              mechanismLabel:
+                type: string
+                example: "Shop now"
+              mechanismTitle:
+                type: string
+                example: "Title example"
+              mechanismText:
+                type: string
+                example: "Text example"
+        image:
+          type: object
+          properties:
+            path:
+              type: string
+              example: "http://t3.somesite.com/some/image/url/path"
+        qualifierShort:
+          type: string
+          example: "Buy 85 Office item in-store or online*"
+        baseCashRedemption:
+          type: string
+          example: "95"
+        displayPriority:
+          type: string
+          example: "0"
+        programPriority:
+          type: string
+          example: "0"
+        offerType:
+          type: string
+          example: "buy"
+          enum: ["buy", "spend", "custom", "am-cash-earn", "am-cash-discount"]
+        id:
+          type: string
+          example: "02de71c5-4b91-4a40-bde9-1bab5e8f060b"
+        offerCode:
+          type: string
+          example: "13WIP0U84J3QX33Z6EQ4"
+        displayDate:
+          type: string
+          format: date-time
+          example: "2019-08-06T18:02:45.349Z"
+        qualifier:
+          type: string
+          example: "product"
+        partnerId:
+          type: string
+          example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+        partnerName:
+          type: string
+          example: "Alamo Rent a Car"
+        awardShort:
+          type: string
+          example: "Save $10"
+        startDate:
+          type: string
+          format: date-time
+          example: "2019-08-06T18:02:45"
+        endDate:
+          type: string
+          format: date-time
+          example: "2019-08-06T18:02:45"
+        awardType:
+          type: string
+          example: "flatDiscount"
+        offerCategory1:
+          type: string
+          example: "0300a04d-zd69-79w4-y321-ac43251200a9a"
+        offerCategory1Label:
+          type: string
+          example: "Grocery"
+        offerCategory2:
+          type: string
+          example: "be58904e-4ae9-49fc-ac6d-0e966dc193bb"
+        offerCategory2Label:
+          type: string
+          example: "Pantry"
+        legalText:
+          type: string
+          example: "* Offer valid from October 1, 2019 to April 14, 2020. Valid at participating Alamo Rent a Car locations (excluding Banner X English locations) in Alberta, British Columbia, Manitoba, New Brunswick, Newfoundland and Labrador, Northwest Territories, Nova Scotia, Nunavut, Ontario, Prince Edward Island, Quebec, Saskatchewan, Thunder Bay and Yukon (excluding City Name English )"
+        massOffer:
+          type: boolean
+          example: true
+        active:
+          type: boolean
+          example: true
+
+    Partners:
+      properties:
+        name:
+          type: string
+          example: "someName"
+        baseEarnRate:
+          type: string
+          example: "1 Mile for every $20 spent"
+        priority:
+          type: integer
+          example: 20
+        id:
+          type: string
+          example: "4de31060-8970-11ea-bc55-0242ac139900"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2019-10-07T17:11:15.870Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2020-04-28T16:50:17.127Z"
+        revision:
+          type: integer
+          example: 4
+        regions:
+          $ref: "#/components/schemas/Region"
+          example: ["ab", "bc"]
+        sponsorCodes:
+          type: array
+          items:
+            type: string
+            example: ["MISF"]
+        type:
+          type: array
+          items:
+            type: string
+            enum: ["in-store", "cash", "fi", "load+go"]
+            example: ["in-store"]
+        fullLogo:
+          $ref: "#/components/schemas/Logo"
+        maxCashMiles:
+          type: string
+          example: "Use cash miles here! Up to $100 (950 Cash Miles) towards your purchase in-store, per day."
+        regionOverrides:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "Some Name"
+              brandKey:
+                type: string
+                example: "SomeBrandKey"
+              fullLogo:
+                $ref: "#/components/schemas/Logo"
+              webColourLogo:
+                $ref: "#/components/schemas/Logo"
+              webWhiteLogo:
+                $ref: "#/components/schemas/Logo"
+        webColourLogo:
+          $ref: "#/components/schemas/Logo"
+        webWhiteLogo:
+          $ref: "#/components/schemas/Logo"
+        getMilesFeatured:
+          type: boolean
+          example: true
+        heartLogo:
+          $ref: "#/components/schemas/Logo"
+        partnerCategory:
+          type: array
+          items:
+            type: string
+            enum:
+              [
+                "all",
+                "grocery+liquor",
+                "fuel+auto",
+                "travel",
+                "financial",
+                "lifestyle",
+                "home+office",
+              ]
+            example: "grocery+liquor"
+        categoryPriority:
+          type: integer
+          example: 1
+        partnerUrl:
+          type: string
+          example: "http://someurl.com"
+        betaPartner:
+          type: boolean
+          example: true
+        locale:
+          $ref: "#/components/schemas/Locale"
+          example: "en-CA"
+        terms:
+          type: string
+          example: "<p>* Offer excludes taxes, delivery charges, bill payments, service fees"
+
+    PartnersV3:
+      properties:
+        id:
+          type: string
+          example: "4c06d824-61f0-4876-ada0-ada98902917c"
+        name:
+          type: string
+          example: "Budget Car & Truck Rental"
+        baseEarnRate:
+          type: string
+          example: "1 Mile for every $15 per transaction in local currency up to a maximum of 100 miles per rental"
+        getMilesFeatured:
+          type: boolean
+          example: true
+        maxCashMiles:
+          type: string
+          example: "500 Cash Miles max redemption"
+        categoryPriority:
+          type: number
+          example: 5
+        pageURL:
+          type: string
+          example: "https://www.budget.ca/en/home"
+        partnerURL:
+          type: string
+          example: "https://www.budget.ca/en/home"
+        heartLogo:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerImageV3"
+        fullLogo:
+          $ref: "#/components/schemas/PartnerImageV3"
+        language:
+          type: string
+          example: "en"
+        locale:
+          $ref: "#/components/schemas/Locale"
+          example: "en-CA"
+        sponsorCodes:
+          type: array
+          items:
+            type: string
+            example: ["BUDG"]
+        partnerCategory:
+          type: array
+          items:
+            type: string
+            enum:
+              [
+                "all",
+                "grocery+liquor",
+                "fuel+auto",
+                "travel",
+                "financial",
+                "lifestyle",
+                "home+office",
+              ]
+            example: ["grocery+liquor"]
+        terms:
+          type: string
+          example: "<p>Offer valid at participating Metro locations in Ontario</p>"
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              isSvg:
+                type: string
+                example: "true"
+              icon:
+                type: string
+                example: "OffersPromotion"
+              label:
+                type: string
+                example: "Base Offer"
+        target:
+          type: string
+          example: "_self"
+        betaPartner:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: "2017-05-17T13:18:34.403Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2019-11-15T20:41:52.813Z"
+        revision:
+          type: integer
+          example: 9
+        containerClasses:
+          type: string
+          example: "PartnerListing__tile"
+        priority:
+          type: integer
+          example: 10
+        type:
+          type: array
+          items:
+            type: string
+            enum: ["in-store", "cash", "fi", "load+go"]
+            example: ["in-store"]
+        regions:
+          $ref: "#/components/schemas/Region"
+          example: ["on"]
+
+    Logo:
+      title: Logo
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "@2x"
+          file:
+            type: object
+            properties:
+              url:
+                type: string
+                example: "http://some.url.com/image.png"
+              filename:
+                type: string
+                example: "image.png"
+              contentType:
+                type: string
+                example: "image/jpeg"
+              details:
+                type: object
+                properties:
+                  image:
+                    type: object
+                    properties:
+                      height:
+                        type: integer
+                        example: 512
+                      width:
+                        type: integer
+                        example: 512
+                  size:
+                    type: integer
+                    example: 7496
+
+    Locale:
+      title: Locale
+      type: array
+      items:
+        type: string
+        enum: ["en-CA", "fr-CA"]
+
+    Region:
+      title: Region
+      type: array
+      items:
+        type: string
+        enum:
+          [
+            "all",
+            "ab",
+            "bc",
+            "mb",
+            "nb",
+            "nl",
+            "ns",
+            "nt",
+            "nu",
+            "on",
+            "pe",
+            "qc",
+            "sk",
+            "yt",
+            "tb",
+          ]
+
+    SortOrder:
+      title: SortOrder
+      type: array
+      items:
+        type: string
+        enum: ["Default", "EndingSoonest"]
+
+    RegionEnum:
+      type: string
+      enum: ["AB","BC","MB","NB","NL","NS","NT","NU","ON","PE","QC","SK","YT","TB","ALL"]
+
+    States:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Key signifying a state associated with the offers, value and key are all uppercased
+            example: "LOAD"
+            enum: ['LOAD', 'SAVE']
+          value:
+            type: string
+            description: Value belonging to the above key
+            example: "LOADED"
+            oneOf:
+              - $ref: '#/components/schemas/SaveValue'
+              - $ref: '#/components/schemas/LoadValue'
+          properties:
+            type: object
+            description: Object containing any amount of key/value pairs of type <String, *> containing additional data related to the offer
+            example:
+              { targeted: true, redeemed: "2019-08-06T18:02:45.349Z" }
+          updatedAt:
+            type: string
+            format: date-time
+            example: "2019-08-06T18:02:45.349Z"
+        required:
+          - name
+          - value
+
+    Transaction:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+          example: "88811155599"
+        activityType:
+          type: string
+          example: "ISSUANCE"
+        transactionDate:
+          type: string
+          format: date-time
+          example: "2019-08-06T18:02:45.349Z"
+        transactionDescription:
+          type: string
+          example: "MILLES ARGENT ACHETES"
+        transactionValue:
+          type: integer
+          example: -100
+        cashMiles:
+          type: integer
+          minimum: 0
+          example: 10000
+        dreamMiles:
+          type: integer
+          minimum: 0
+          example: 30000
+        externalReferenceNumber:
+          type: string
+          example: "ON-xxxxxxxxxxxxxx"
+        channel:
+          type: string
+          example: "ETS"
+        sponsorCode:
+          type: string
+          example: "BBMI"
+        sponsorDescriptionEnglish:
+          type: string
+          example: "BUY BACK INACTIVE MILES"
+        sponsorDescriptionFrench:
+          type: string
+          example: "BUY BACK INACTIVE MILES"
+        offerClass:
+          type: string
+          example: "BONUS"
+        offerCode:
+          type: string
+          example: "BBINACTC"
+        offerDescriptionEnglish:
+          type: string
+          example: "Cash reward miles purchased"
+        offerDescriptionFrench:
+          type: string
+          example: "MILLES ARGENT ACHETES"
+        locationCode:
+          type: string
+          example: "0088"
+        logo:
+          type: string
+          example: "/content/dam/airmiles/pdp/logos/LOGO.png"
+        partnerName:
+          type: string
+          example: "Rexall"
+
+    PageDetails:
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 12
+        totalElements:
+          type: integer
+          example: 120
+        totalPages:
+          type: integer
+          example: 10
+        number:
+          type: integer
+          example: 1
+
+    MemberBanner:
+      properties:
+        cardNumber:
+          type: integer
+          pattern: '^\d{10}'
+          example: "84151105555"
+        memberId:
+          type: integer
+          pattern: '^\d{10}'
+          example: "84151105555"
+        firstName:
+          type: string
+          example: "John"
+        tier:
+          type: string
+          enum: ["G", "B", "O"]
+          example: "B"
+        cashBalance:
+          type: string
+          example: "0"
+        dreamBalance:
+          type: string
+          example: "49"
+        region:
+          type: string
+          example: "ON"
+        languagePreference:
+          type: string
+          enum: ["E", "F"]
+          example: "E"
+        postalCode:
+          type: string
+          pattern: '^[A-Z]\d[A-Z]\d[A-z]\d'
+          example: "L1L1L1"
+
+    OrderCardResponse:
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        responseString:
+          type: string
+          example: "response"
+
+    CashLockResponse:
+      type: object
+      properties:
+        cashRedemptionLocked:
+          type: boolean
+          example: false
+
+    PartnerImageV3ForMobile:
+      type: object
+      properties:
+        file:
+          $ref: "#/components/schemas/PartnerImageV3"
+
+    TransactionSummary:
+      properties:
+        cashMilesUsed:
+          type: integer
+          example: 100
+        cashMilesEarned:
+          type: integer
+          example: 100
+        dreamMilesUsed:
+          type: integer
+          example: 100
+        dreamMilesEarned:
+          type: integer
+          example: 100
+
+
+    PartnerImageV3:
+      title: PartnerImageV3
+      type: object
+      properties:
+        title:
+          type: string
+          example: "AnImageTitle"
+        file:
+          $ref: "#/components/schemas/File"
+
+    File:
+      title: File
+      type: object
+      properties:
+        url:
+          type: string
+          example: "http://some.url.com/logo.png"
+        filename:
+          type: string
+          example: "logo.png"
+        contentType:
+          type: string
+          example: "image/png"
+        details:
+          type: object
+          properties:
+            image:
+              type: object
+              properties:
+                height:
+                  type: integer
+                  example: 100
+                width:
+                  type: integer
+                  example: 100
+                size:
+                  type: integer
+                  example: 100
+
+
+
+    SaveValue:
+      title: SaveValue
+      type: string
+      enum: ['SAVED', 'UNSAVED']
+
+    LoadValue:
+      title: LoadValue
+      type: string
+      enum: ['LOADED', 'UNLOADED']
+
+    PutOffersRequestBody:
+      properties:
+        stateChanges:
+          type: array
+          items:
+            type: object
+            properties:
+              offerId:
+                type: string
+                example: "b24cd378-3510-42d8-8629-0994c7f73e14"
+              states:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Key signifying a state associated with the offer,value and Key are all uppercased
+                      example: "load"
+                      enum: ["load", "save"]
+                    value:
+                      type: string
+                      description: Value belonging to the above key
+                      example: "loaded"
+                      oneOf:
+                        - $ref: '#/components/schemas/SaveValue'
+                        - $ref: '#/components/schemas/LoadValue'
+
+  responses:
+    ErrorResponse:
+      description: error response payload
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - errorCode
+              - errorType
+              - internalMessage
+              - localizedMessage
+            properties:
+              errorCode:
+                type: string
+                example: "ESB-MEM-CN-ND"
+                description: Error code.  If the request failed due to an CELO error, it will be set to the error code from CELO.
+              errorType:
+                type: string
+                example: "REQUEST_CONTENT"
+                description: Type of error.  Only set if the request failed.
+                enum:
+                  [
+                    "REQUEST_CONTENT",
+                    "BUSINESS_RULE",
+                    "SERVER_ERROR"
+                  ]
+              internalMessage:
+                type: string
+                example: "Card Number is invalid"
+                description: Internal message to be used by developers
+              localizedMessage:
+                type: string
+                example: "Ce numéro de carte n'est pas valide"
+                description: Localized message intended for end-users
+            title: ErrorResponse
+    401NoTokenError:
+      description: The token is missing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: "Missing Token"
+            title: Bad Request
+    401UnauthorizedError:
+      description: The specified request is unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: "401"
+              message:
+                type: string
+                example: "Unauthorized"
+            title: Bad Request
+    403InvalidTokenError:
+      description: The token is invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+                example: 403
+              message:
+                type: string
+                example: "Invalid Token"
+            title: Forbidden Request
+    400BadRequestError:
+      description: The specified request is invalid.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: "Invalid parameter: sortBy"
+            title: Bad Request
+    500InternalServerError:
+      description: Generic Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: "Internal Server Error"
+            title: Generic Error
+
+  parameters:
+    SearchTermParam:
+      name: SearchTerm
+      in: query
+      description: Search term for address autocomplete
+      required: true
+      schema:
+        type: string
+        example: "address"
+    LastIdParam:
+      name: LastId
+      in: query
+      description: Last Id, which was looked up
+      required: false
+      schema:
+        type: string
+        example: "CA|CP|ENG|QC-SAINTE+SABINE-ANDRÉ_S_ST"
+    IdParam:
+      name: Id
+      in: query
+      description: Id of the address to retrieve
+      required: true
+      schema:
+        type: string
+        example: "CA|CP|B|13117007"
+    LimitParam:
+      name: limit
+      in: query
+      description: The numbers of partners to return
+      schema:
+        type: integer
+        example: 1000
+        default: 1000
+    OffsetParam:
+      name: offset
+      in: query
+      description: The number of partners to skip before starting to collect the result set
+      schema:
+        type: integer
+        example: 0
+        default: 0
+    LocaleParam:
+      name: locale
+      in: query
+      description: The locale value
+      schema:
+        type: string
+        enum: ["en", "fr"]
+        example: "en"
+    RegionParam:
+      name: region
+      in: query
+      description: Region of partners
+      schema:
+        type: string
+        enum:
+          [
+            "all",
+            "ab",
+            "bc",
+            "mb",
+            "nb",
+            "nl",
+            "ns",
+            "nt",
+            "nu",
+            "on",
+            "pe",
+            "qc",
+            "sk",
+            "yt",
+            "tb",
+          ]
+        example: "on"
+    TypeParam:
+      name: type
+      in: query
+      description: The type of partners
+      schema:
+        type: string
+        enum: ["in-store", "cash", "online", "fi", "load+go"]
+        example: "cash"
+    FilterTypeParam:
+      name: filterType
+      in: query
+      description: Filter type for different partner services
+      schema:
+        type: string
+        enum: ["region", "regionType", "location", "partnerId"]
+        example: "region"
+    PartnerIdParam:
+      name: partnerId
+      in: query
+      description: Partner Id
+      schema:
+        type: string
+        example: "38178928-9281-42aa-9f70-8c39c453baf1"
+    LatitudeParam:
+      name: latitude
+      in: query
+      description: users geographic latitude
+      schema:
+        type: number
+        minimum: -90.0
+        maximum: 90.0
+        example: 55.5
+    LongitudeParam:
+      name: longitude
+      in: query
+      description: users geographic longitude
+      schema:
+        type: number
+        minimum: -180.0
+        maximum: 180.0
+        example: 99.9
+    SponsorCodeParam:
+      name: sponsorCode
+      in: query
+      description: "A partners sponsor code"
+      schema:
+        type: string
+        example: "CODE"
+    getMilesFeaturedParam:
+      in: query
+      name: getMilesFeatured
+      description: "A flag to get partners with or without miles featured, default gets all"
+      schema:
+        type: boolean
+        example: true
+    CategoryParam:
+      in: query
+      name: category
+      description: "A partner category (e.g. grocery+liquor)"
+      schema:
+        type: string
+        example: "grocery+liquor"
+    StateParam:
+      in: query
+      name: state
+      description: "A state related to an offer"
+      schema:
+        type: string
+        example: "load:loaded"
